@@ -1,0 +1,6 @@
+{
+  "name": "School Enterprise Suite",
+  "description": "Enterprise-level school management software with a highly responsive SaaS dashboard, multiple client/admin modules, biometric/QR check-in simulators, financial sheets, and server-side Gemini AI predictions.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
