@@ -57,6 +57,8 @@ import {
   initialLandingTexts
 } from "./data/mockData";
 
+import { SupabaseSyncEngine } from "./lib/supabaseClient";
+
 // Icons imports from lucide-react
 import {
   LayoutDashboard,
@@ -208,10 +210,16 @@ export default function App() {
   // Auto save data changes to storage
   useEffect(() => {
     setStoredData("students", students);
+    students.forEach((s) => {
+      SupabaseSyncEngine.queueUpdate("students", s.id, s);
+    });
   }, [students]);
 
   useEffect(() => {
     setStoredData("teachers", teachers);
+    teachers.forEach((t) => {
+      SupabaseSyncEngine.queueUpdate("teachers", t.id, t);
+    });
   }, [teachers]);
 
   useEffect(() => {
@@ -220,10 +228,16 @@ export default function App() {
 
   useEffect(() => {
     setStoredData("attendance", attendance);
+    attendance.forEach((a) => {
+      SupabaseSyncEngine.queueUpdate("attendance", a.id, a);
+    });
   }, [attendance]);
 
   useEffect(() => {
     setStoredData("fee_receipts", feeReceipts);
+    feeReceipts.forEach((fr) => {
+      SupabaseSyncEngine.queueUpdate("fee_receipts", fr.id, fr);
+    });
   }, [feeReceipts]);
 
   useEffect(() => {
@@ -252,6 +266,9 @@ export default function App() {
 
   useEffect(() => {
     setStoredData("ledger", ledger);
+    ledger.forEach((l) => {
+      SupabaseSyncEngine.queueUpdate("ledger", l.id, l);
+    });
   }, [ledger]);
 
   useEffect(() => {
