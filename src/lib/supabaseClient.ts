@@ -29,6 +29,10 @@ export function getSupabaseClient(): SupabaseClient | null {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return null;
   }
+  // Safe validation check to prevent "Invalid supabaseUrl" errors with placeholder keys
+  if (!SUPABASE_URL.startsWith("http://") && !SUPABASE_URL.startsWith("https://")) {
+    return null;
+  }
   if (!supabaseInstance) {
     try {
       supabaseInstance = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

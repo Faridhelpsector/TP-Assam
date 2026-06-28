@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { initialStudents } from "../data/mockData";
+import { getSupabaseClient } from "../lib/supabaseClient";
 import {
   ResponsiveContainer,
   PieChart,
@@ -139,6 +140,13 @@ export default function LandingPage({
   const [feeEstimateClass, setFeeEstimateClass] = useState<string>("Grade 1-5");
   const [hasTransport, setHasTransport] = useState<boolean>(false);
   const [estimateResult, setEstimateResult] = useState<number>(2300);
+
+  // Login with Supabase controls
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   // Direct editing modal states on Landing page
   const [isEditLandingModalOpen, setIsEditLandingModalOpen] = useState(false);
@@ -477,9 +485,8 @@ Copyright © 2026 EduCore Academy Assam. All Rights Reserved.
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
-              playSfx("success");
-              onLogAudit("Admin Log In", "Authentication", "Admin logged in via top-right navigation header.");
-              onUnlock();
+              playSfx("click");
+              setIsLoginModalOpen(true);
             }}
             className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-4.5 py-2.5 rounded-xl text-xs font-extrabold transition-all shadow-md hover:shadow-lg cursor-pointer hover:scale-[1.03]"
           >
@@ -2371,6 +2378,174 @@ Copyright © 2026 EduCore Academy Assam. All Rights Reserved.
               </button>
             </div>
 
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+
+    {/* 5. SUPABASE AUTHENTICATION LOGIN MODAL */}
+    <AnimatePresence>
+      {isLoginModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[999] overflow-y-auto">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white dark:bg-slate-950 border dark:border-slate-850 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-5 text-left"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b dark:border-slate-900 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🔑</span>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Administrative Login</h3>
+                  <p className="text-[10px] text-slate-400">Authenticate securely to access your school's live dashboard.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  playSfx("click");
+                  setIsLoginModalOpen(false);
+                  setLoginError(null);
+                }}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-xl transition-all cursor-pointer text-slate-500"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {loginError && (
+              <div className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-2.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                <AlertCircle size={15} className="shrink-0 mt-0.5" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            {/* Form */}
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setIsLoggingIn(true);
+                setLoginError(null);
+                playSfx("click");
+
+                const client = getSupabaseClient();
+                if (!client) {
+                  setIsLoggingIn(false);
+                  setLoginError("Supabase credentials are not connected yet in the Secrets Panel. Please connect VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY first, or use the 'Demo Bypass' below to access instantly.");
+                  return;
+                }
+
+                try {
+                  const { data, error } = await client.auth.signInWithPassword({
+                    email: loginEmail,
+                    password: loginPassword,
+                  });
+
+                  if (error) {
+                    throw error;
+                  }
+
+                  if (data?.user) {
+                    playSfx("success");
+                    onLogAudit("Admin Log In", "Authentication", `Admin successfully logged in with Supabase: ${data.user.email}`);
+                    setIsLoginModalOpen(false);
+                    onUnlock();
+                  } else {
+                    setLoginError("Invalid email or password.");
+                  }
+                } catch (err: any) {
+                  console.error("Supabase Auth error:", err);
+                  setLoginError(err.message || "An error occurred during authentication. Please verify credentials.");
+                } finally {
+                  setIsLoggingIn(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-3.5 text-xs">
+                {/* Email Field */}
+                <div className="space-y-1.5">
+                  <label className="font-extrabold text-slate-700 dark:text-slate-300 block">Supabase Registered Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white font-medium"
+                  />
+                </div>
+
+                {/* Password Field */}
+                <div className="space-y-1.5">
+                  <label className="font-extrabold text-slate-700 dark:text-slate-300 block">Secret Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-500/10 flex items-center justify-center gap-2"
+              >
+                {isLoggingIn ? "Authenticating with Supabase..." : "Sign In with Supabase"}
+              </button>
+            </form>
+
+            {/* Bypass Section */}
+            <div className="border-t dark:border-slate-900 pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Developer & Demo Bypass</span>
+                <span className="text-[9px] bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded-full font-bold">Offline Active</span>
+              </div>
+              <p className="text-[10px] text-zinc-500 leading-normal">
+                Don't have a Supabase database hooked up yet? Access the entire school workspace instantly using the offline demo engine.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playSfx("success");
+                    onLogAudit("Admin Log In", "Authentication", "Admin authorized via Quick Demo Bypass.");
+                    setIsLoginModalOpen(false);
+                    onUnlock();
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-zinc-300 font-bold text-[10px] transition-all cursor-pointer border dark:border-slate-800"
+                >
+                  ⚡ Direct Demo Bypass
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pin = prompt("Enter Master PIN (Default: 1234 or 2026):");
+                    if (pin === "1234" || pin === "2026") {
+                      playSfx("success");
+                      onLogAudit("Admin Log In", "Authentication", "Admin authorized via PIN input prompt.");
+                      setIsLoginModalOpen(false);
+                      onUnlock();
+                    } else if (pin !== null) {
+                      playSfx("error");
+                      alert("Invalid Master PIN.");
+                    }
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-zinc-300 font-bold text-[10px] transition-all cursor-pointer border dark:border-slate-800"
+                >
+                  🔢 PIN Authenticate
+                </button>
+              </div>
+            </div>
           </motion.div>
         </div>
       )}
