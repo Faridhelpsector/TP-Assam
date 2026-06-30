@@ -105,6 +105,7 @@ export default function FeesFinance({
   const [newCatName, setNewCatName] = useState("");
   const [newCatAmount, setNewCatAmount] = useState("500");
   const [newCatFreq, setNewCatFreq] = useState<"Monthly" | "Quarterly" | "Annually" | "One-time">("Monthly");
+  const [showAddCatForm, setShowAddCatForm] = useState(false);
 
   // New Fee Receipt states
   const [showFeeReceiptModal, setShowFeeReceiptModal] = useState(false);
@@ -701,17 +702,113 @@ export default function FeesFinance({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs">
             {/* Fee Tiers List */}
             <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm space-y-4">
-              <h4 className="font-extrabold text-gray-900 dark:text-white uppercase tracking-wider text-[10px] block flex items-center gap-1">
-                <Coins size={12} className="text-indigo-500" /> Active Standard Fee Categories
-              </h4>
-              <div className="space-y-2">
+              <div className="flex items-center justify-between pb-1 border-b dark:border-slate-800">
+                <h4 className="font-extrabold text-gray-900 dark:text-white uppercase tracking-wider text-[10px] block flex items-center gap-1">
+                  <Coins size={12} className="text-indigo-500" /> Active Standard Fee Categories
+                </h4>
+                <button
+                  onClick={() => setShowAddCatForm(!showAddCatForm)}
+                  className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-[10px] text-indigo-600 dark:text-indigo-400 font-bold transition-all rounded-lg cursor-pointer"
+                  title="Add Standard Fee Category"
+                >
+                  <Plus size={10} /> Add
+                </button>
+              </div>
+
+              {/* Expandable Category Addition Form */}
+              <AnimatePresence>
+                {showAddCatForm && (
+                  <motion.form
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    onSubmit={(e) => {
+                      handleAddCategory(e);
+                      setShowAddCatForm(false);
+                    }}
+                    className="p-3 bg-indigo-50/40 dark:bg-slate-950 rounded-2xl border border-indigo-100/60 dark:border-slate-800 space-y-3 text-[11px] overflow-hidden"
+                  >
+                    <span className="font-black text-slate-800 dark:text-slate-200 block">Create Standard Category (नई शुल्क श्रेणी)</span>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[9px] text-zinc-400 font-bold uppercase block">Category Name / नाम</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g., Computer Fee, Library Fee"
+                        value={newCatName}
+                        onChange={(e) => setNewCatName(e.target.value)}
+                        className="w-full p-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white text-[11px]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-zinc-400 font-bold uppercase block">Amount / शुल्क (₹)</label>
+                        <input
+                          type="number"
+                          required
+                          placeholder="Rate"
+                          value={newCatAmount}
+                          onChange={(e) => setNewCatAmount(e.target.value)}
+                          className="w-full p-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white text-[11px]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-zinc-400 font-bold uppercase block">Cycle / आवृत्ति</label>
+                        <select
+                          value={newCatFreq}
+                          onChange={(e) => setNewCatFreq(e.target.value as any)}
+                          className="w-full p-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white text-[11px]"
+                        >
+                          <option value="Monthly">Monthly</option>
+                          <option value="Quarterly">Quarterly</option>
+                          <option value="Annually">Annually</option>
+                          <option value="One-time">One-time</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddCatForm(false)}
+                        className="w-1/3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-center font-bold cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-center cursor-pointer shadow-sm"
+                      >
+                        Save Tier
+                      </button>
+                    </div>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
                 {localCategories.map(cat => (
-                  <div key={cat.id} className="p-3 bg-gray-50 dark:bg-slate-950 rounded-xl flex items-center justify-between border">
+                  <div key={cat.id} className="p-3 bg-gray-50 dark:bg-slate-950 rounded-xl flex items-center justify-between border dark:border-slate-850 group hover:border-indigo-200 transition-all">
                     <div>
                       <span className="font-bold block text-gray-800 dark:text-gray-200">{cat.name}</span>
                       <span className="text-[10px] text-zinc-400 font-mono tracking-wider">{cat.frequency} Plan</span>
                     </div>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">₹{cat.amount}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">₹{cat.amount}</span>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Are you sure you want to delete the "${cat.name}" category?`)) {
+                            handleDeleteCategory(cat.id);
+                          }
+                        }}
+                        className="text-rose-500 hover:text-rose-600 p-1 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                        title="Delete category"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1382,16 +1479,24 @@ export default function FeesFinance({
             </div>
 
             {/* Print/Download Button bar inside modal */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs">
-              <span className="text-zinc-400 font-medium">✨ Tip: You can print this layout using standard browser options (Ctrl+P) after closing this window.</span>
-              <button
-                onClick={() => {
-                  window.print();
-                }}
-                className="px-5 py-2.5 bg-zinc-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow flex items-center gap-1.5"
-              >
-                <Printer size={14} /> Open Native System Print Layout
-              </button>
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
+              <span className="text-zinc-400 font-medium text-center sm:text-left">✨ Tip: You can print this layout using standard browser options (Ctrl+P) or save.</span>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => setShowQuadReceiptsModal(false)}
+                  className="flex-1 sm:flex-initial px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  ← Back (पीछे जाएं)
+                </button>
+                <button
+                  onClick={() => {
+                    window.print();
+                  }}
+                  className="flex-1 sm:flex-initial px-5 py-2.5 bg-zinc-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-700 text-white font-bold rounded-xl transition-all cursor-pointer shadow flex items-center justify-center gap-1.5"
+                >
+                  <Printer size={14} /> Print Layout (प्रिंट करें)
+                </button>
+              </div>
             </div>
 
           </motion.div>
