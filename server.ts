@@ -153,6 +153,11 @@ async function initServer() {
   });
 }
 
-initServer().catch((e) => {
-  console.error("Failed to bootstrap server container:", e);
-});
+if (process.env.NETLIFY !== "true") {
+  initServer().catch((e) => {
+    console.error("Failed to bootstrap server container:", e);
+  });
+}
+
+export { app };
+

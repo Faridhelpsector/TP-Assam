@@ -1,0 +1,21 @@
+# Netlify configuration file for seamless React Frontend + Express Serverless build and deployment
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_version = "20"
+
+# Route API requests to the Netlify Serverless Function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Route all other traffic to index.html to prevent 404 on page refreshes (SPA Routing fallback)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

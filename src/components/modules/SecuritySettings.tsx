@@ -5,10 +5,9 @@
 
 import React, { useState } from "react";
 import { AuditLog, UserRole } from "../../types";
-import { ShieldCheck, UserCheck, Key, RefreshCw, EyeOff, ShieldAlert, MonitorCheck, Save, Trash2, Palette, Database, Server, Cpu, Layers, WifiOff, Zap } from "lucide-react";
+import { ShieldCheck, UserCheck, Key, RefreshCw, EyeOff, ShieldAlert, MonitorCheck, Save, Trash2, Palette, Database, Server, Cpu, Layers, WifiOff, Zap, Copy, Check } from "lucide-react";
 import { motion } from "motion/react";
 import { builtInThemes } from "../../themeConfig";
-import { getSupabaseClient, SupabaseSyncEngine, supabaseSyncAnalytics } from "../../lib/supabaseClient";
 
 interface SecuritySettingsProps {
   auditLogs: AuditLog[];
@@ -25,18 +24,7 @@ export default function SecuritySettings({
   currentThemeId,
   onThemeChange
 }: SecuritySettingsProps) {
-  const [activeTab, setActiveTab] = useState<"roles" | "security" | "theme" | "audits" | "supabase">("roles");
-
-  // Supabase free tier optimization variables
-  const [syncMode, setSyncMode] = useState<"manual" | "throttled" | "realtime">("throttled");
-  const [throttleInterval, setThrottleInterval] = useState<number>(30); // 30 seconds debounce
-  const [selectiveColumns, setSelectiveColumns] = useState<boolean>(true);
-  const [flushing, setFlushing] = useState<boolean>(false);
-  const [cachedEntriesCount, setCachedEntriesCount] = useState<number>(() => {
-    return Object.keys(localStorage).filter(k => k.startsWith("edu_suite_supabase_cache_")).length;
-  });
-
-  const isSupabaseClientLive = getSupabaseClient() !== null;
+  const [activeTab, setActiveTab] = useState<"roles" | "security" | "theme" | "audits">("roles");
 
   // Selected User role for permissions customization
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.SUPER_ADMIN);
@@ -118,15 +106,6 @@ export default function SecuritySettings({
           <MonitorCheck size={14} />
           Live Audit Trails JSON Feed
         </button>
-        <button
-          onClick={() => setActiveTab("supabase")}
-          className={`px-5 py-3 font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-            activeTab === "supabase" ? "border-indigo-600 text-indigo-600 dark:text-indigo-400" : "border-transparent text-gray-400 hover:text-gray-900"
-          }`}
-        >
-          <Database size={14} className="text-emerald-500" />
-          Supabase Free-Tier Shield
-        </button>
       </div>
 
       {/* 1. ROLE MATRIX CONFIGURATION SECTION */}
@@ -145,13 +124,13 @@ export default function SecuritySettings({
               <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold px-2.5 pb-2 block">System Roles List</span>
               {Object.values(UserRole).map(role => (
                 <button
-                  key={role}
-                  onClick={() => setSelectedRole(role)}
-                  className={`w-full py-2.5 px-3 rounded-xl text-left font-bold transition-all flex items-center justify-between text-xs cursor-pointer ${
-                    selectedRole === role
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "bg-transparent text-zinc-500 hover:bg-slate-50 hover:text-indigo-600"
-                  }`}
+                   key={role}
+                   onClick={() => setSelectedRole(role)}
+                   className={`w-full py-2.5 px-3 rounded-xl text-left font-bold transition-all flex items-center justify-between text-xs cursor-pointer ${
+                     selectedRole === role
+                       ? "bg-indigo-600 text-white shadow-sm"
+                       : "bg-transparent text-zinc-500 hover:bg-slate-50 hover:text-indigo-600"
+                   }`}
                 >
                   <span>{role}</span>
                   {selectedRole === role && <span className="text-[9px] bg-indigo-500 text-white font-mono rounded px-1">ACTIVE</span>}
@@ -164,7 +143,7 @@ export default function SecuritySettings({
               <div className="flex justify-between items-center pb-2 border-b">
                 <div>
                   <h4 className="font-extrabold text-[#111827] dark:text-white text-base">Authorize Privileges for: {selectedRole}</h4>
-                  <p className="text-zinc-405 text-zinc-500">Enable or restrict write permissions for the selected standard role.</p>
+                  <p className="text-zinc-500">Enable or restrict write permissions for the selected standard role.</p>
                 </div>
                 <button
                   onClick={() => alert(`Permissions Committed for ${selectedRole} tier!`)}
@@ -199,9 +178,9 @@ export default function SecuritySettings({
         </div>
       )}
 
-      {/* 2. 2FA & IDLE SESSION CONFIGURATION SECION */}
+      {/* 2. 2FA & IDLE SESSION CONFIGURATION SECTION */}
       {activeTab === "security" && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-150-100 dark:border-slate-800 p-6 shadow-sm space-y-6">
           <div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Enterprise security configurations</h3>
             <p className="text-zinc-400 font-medium">Activate global multi-factor guidelines and configure default idle session timeouts.</p>
@@ -281,7 +260,7 @@ export default function SecuritySettings({
                 >
                   {/* Selected Indicator Badge */}
                   {isSelected && (
-                    <div className="absolute top-3 right-3 bg-indigo-650 bg-indigo-600 text-white font-bold font-mono uppercase tracking-widest text-[8px] rounded px-1.5 py-0.5 shadow">
+                    <div className="absolute top-3 right-3 bg-indigo-600 text-white font-bold font-mono uppercase tracking-widest text-[8px] rounded px-1.5 py-0.5 shadow">
                       ACTIVE
                     </div>
                   )}
@@ -310,7 +289,7 @@ export default function SecuritySettings({
                   </div>
 
                   <div className="mt-4 pt-3 border-t dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[9px] text-zinc-450 dark:text-zinc-500 font-mono">{theme.fontHeading.split(" ")[0]}</span>
+                    <span className="text-[9px] text-zinc-500 font-mono">{theme.fontHeading.split(" ")[0]}</span>
                     <button
                       type="button"
                       className={`text-[10px] font-bold py-1 px-3 rounded-lg transition-transform ${
@@ -363,236 +342,6 @@ export default function SecuritySettings({
             {auditLogs.length === 0 && (
               <p className="text-zinc-500 italic text-center pt-10">No auditing logs currently reported.</p>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* 5. SUPABASE FREE-TIER PROTECTION SHIELD TAB */}
-      {activeTab === "supabase" && (
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="p-6 bg-gradient-to-r from-emerald-600 to-indigo-650 rounded-3xl text-white shadow-lg space-y-3 relative overflow-hidden">
-            <div className="absolute right-[-20px] bottom-[-20px] opacity-10 select-none">
-              <Database size={240} />
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 relative z-10">
-              <div className="space-y-1">
-                <span className="px-3 py-1 bg-white/20 rounded-full text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1 w-fit border border-white/10">
-                  <ShieldCheck size={11} /> Supabase Free-Tier Safe Shield Active
-                </span>
-                <h3 className="text-xl font-black tracking-tight">Supabase Sync & Guard Control Center</h3>
-                <p className="text-xs text-white/80 max-w-2xl leading-normal">
-                  Specifically architected to optimize PostgreSQL connection pooling, throttle database mutations, and cache queries. Protects your free-tier plan so you never exceed active connection or API limits.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-400/20 p-3 rounded-2xl">
-                <div className={`w-3 h-3 rounded-full ${isSupabaseClientLive ? "bg-emerald-400 animate-ping" : "bg-orange-400 animate-pulse"}`} />
-                <div className="text-left font-mono">
-                  <span className="text-[9px] block text-gray-300 font-bold leading-none uppercase">Status</span>
-                  <span className="text-xs font-black block leading-normal mt-0.5">
-                    {isSupabaseClientLive ? "CONNECTED (LIVE API)" : "LOCAL-FIRST FALLBACK"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 bg-white dark:bg-slate-900 border border-gray-150-100 dark:border-slate-800 rounded-3xl flex items-center gap-4 shadow-xs">
-              <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl">
-                <Cpu size={20} />
-              </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold block uppercase">API Queries Saved</span>
-                <span className="text-lg font-black text-slate-950 dark:text-white block mt-0.5">
-                  {supabaseSyncAnalytics.apiCallsSaved + 142}
-                </span>
-                <span className="text-[9.5px] text-emerald-500 font-semibold block mt-0.5">98.4% Cache hit rate</span>
-              </div>
-            </div>
-
-            <div className="p-5 bg-white dark:bg-slate-900 border border-gray-150-100 dark:border-slate-800 rounded-3xl flex items-center gap-4 shadow-xs">
-              <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl">
-                <Layers size={20} />
-              </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold block uppercase">Bandwidth Conserved</span>
-                <span className="text-lg font-black text-slate-950 dark:text-white block mt-0.5">
-                  {((supabaseSyncAnalytics.bandwidthSavedBytes + 1152000) / 1024 / 1024).toFixed(2)} MB
-                </span>
-                <span className="text-[9.5px] text-emerald-500 font-semibold block mt-0.5">Avoids 2GB free ceiling</span>
-              </div>
-            </div>
-
-            <div className="p-5 bg-white dark:bg-slate-900 border border-gray-150-100 dark:border-slate-800 rounded-3xl flex items-center gap-4 shadow-xs">
-              <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl">
-                <Server size={20} />
-              </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold block uppercase">Active Pools Saved</span>
-                <span className="text-lg font-black text-slate-950 dark:text-white block mt-0.5">
-                  0 of 60 limit
-                </span>
-                <span className="text-[9.5px] text-emerald-500 font-semibold block mt-0.5">Using stateless PostgREST</span>
-              </div>
-            </div>
-
-            <div className="p-5 bg-white dark:bg-slate-900 border border-gray-150-100 dark:border-slate-800 rounded-3xl flex items-center gap-4 shadow-xs">
-              <div className="p-3 bg-pink-500/10 text-pink-500 rounded-2xl">
-                <Zap size={20} />
-              </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold block uppercase">Local Cache Blocks</span>
-                <span className="text-lg font-black text-slate-950 dark:text-white block mt-0.5">
-                  {cachedEntriesCount} Tables
-                </span>
-                <span className="text-[9.5px] text-indigo-500 font-semibold block mt-0.5">Instant UI Response</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Sync Strategy Form */}
-            <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-gray-150-100 dark:border-slate-800 p-6 rounded-3xl space-y-5">
-              <div className="border-b pb-3">
-                <h4 className="font-extrabold text-slate-900 dark:text-white text-base">Intelligent Sync Controls</h4>
-                <p className="text-zinc-400 mt-0.5">Tweak the background database synchronization system to minimize write requests.</p>
-              </div>
-
-              <div className="space-y-4">
-                {/* Sync Mode */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-850 space-y-2">
-                  <span className="font-bold block text-sm text-slate-900 dark:text-white">Synchronization Mode</span>
-                  <p className="text-[10px] text-slate-400">Specify how student and transaction edits reach your Supabase tables.</p>
-                  
-                  <div className="grid grid-cols-3 gap-2.5 pt-1.5">
-                    {[
-                      { id: "manual", title: "Manual-Only", desc: "Syncs only on button clicks" },
-                      { id: "throttled", title: "Smart Debounce", desc: "Throttled queues every 30s" },
-                      { id: "realtime", title: "Instant", desc: "Sends on every small modification" }
-                    ].map((mode) => (
-                      <button
-                        key={mode.id}
-                        type="button"
-                        onClick={() => {
-                          setSyncMode(mode.id as any);
-                          onLogAudit("Change Supabase Sync Mode", "Database Sync", `Configured sync mode to ${mode.title}`);
-                        }}
-                        className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col justify-between ${
-                          syncMode === mode.id
-                            ? "border-emerald-500 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-extrabold"
-                            : "border-gray-200 dark:border-slate-800 bg-transparent text-gray-500 hover:bg-slate-50"
-                        }`}
-                      >
-                        <span className="text-xs block font-bold">{mode.title}</span>
-                        <span className="text-[9px] text-gray-400 block mt-1 leading-normal font-medium">{mode.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Debounce delay Slider */}
-                {syncMode === "throttled" && (
-                  <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-850 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <span className="font-bold block text-slate-900 dark:text-white">Merge Delay: {throttleInterval} Seconds</span>
-                      <span className="text-[10px] text-slate-400 block max-w-sm">
-                        Wait period before consolidating separate modifications into a single network payload. Larger delay saves up to 95% API calls.
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="5"
-                      max="120"
-                      step="5"
-                      value={throttleInterval}
-                      onChange={(e) => setThrottleInterval(Number(e.target.value))}
-                      className="w-32 accent-emerald-500 h-1.5 rounded-lg bg-slate-200 cursor-pointer"
-                    />
-                  </div>
-                )}
-
-                {/* Selective Column Select Toggle */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-850 flex items-center justify-between">
-                  <div className="space-y-1">
-                    <span className="font-bold block text-slate-900 dark:text-white">Selective Projection Queries</span>
-                    <span className="text-[10px] text-slate-400 block max-w-sm">
-                      Only requests active columns (such as ID, Name, Grade) instead of wildcards (`select *`). Keeps database network egress extremely low.
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setSelectiveColumns(!selectiveColumns)}
-                    className={`w-12 h-6 rounded-full p-1 transition-colors ${selectiveColumns ? "bg-emerald-500" : "bg-gray-300"}`}
-                  >
-                    <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${selectiveColumns ? "translate-x-6" : ""}`} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Console Actions and Environment Help */}
-            <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-gray-150-100 dark:border-slate-800 p-6 rounded-3xl flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <div className="border-b pb-3">
-                  <h4 className="font-extrabold text-slate-900 dark:text-white text-base font-sans">Operations Console</h4>
-                  <p className="text-zinc-400 mt-0.5">Interact with the local synchronization cache layer directly.</p>
-                </div>
-
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    disabled={flushing}
-                    onClick={async () => {
-                      setFlushing(true);
-                      onLogAudit("Flush Queued Writes", "Database Sync", "Initiated manual push of queued edits to Supabase tables");
-                      try {
-                        const count = await SupabaseSyncEngine.flushAllQueued();
-                        alert(`Successfully merged and synchronized ${count} transaction blocks with Supabase database!`);
-                      } catch {
-                        alert("Synchronized with offline state.");
-                      }
-                      setFlushing(false);
-                    }}
-                    className="w-full py-3 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-white font-black uppercase text-[10px] tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow disabled:opacity-50"
-                  >
-                    <RefreshCw size={13} className={flushing ? "animate-spin" : ""} />
-                    {flushing ? "CONSOLIDATING PAYLOADS..." : "Force Consolidated Sync Now"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      SupabaseSyncEngine.clearCaches();
-                      setCachedEntriesCount(0);
-                      onLogAudit("Purge Supabase Cache", "Database Sync", "Wiped all locally cached Supabase responses.");
-                      alert("Successfully flushed Supabase cache data pools!");
-                    }}
-                    className="w-full py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 border font-extrabold text-[10px] tracking-wider flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Trash2 size={13} />
-                    Purge Local Read Caches
-                  </button>
-                </div>
-              </div>
-
-              {/* Instructions Box */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border dark:border-slate-850 text-[11px] leading-relaxed text-zinc-500">
-                <span className="font-bold text-slate-800 dark:text-white block mb-1">🔑 Connect Your Own Supabase</span>
-                To bind this optimized sync engine to your real Supabase tables:
-                <ol className="list-decimal pl-4 mt-1.5 space-y-1 font-semibold text-[10px]">
-                  <li>Go to <b>Settings Menu</b> in the top right.</li>
-                  <li>In the <b>Secrets Panel</b>, add:</li>
-                  <div className="font-mono bg-slate-150-100 dark:bg-slate-900 p-1.5 rounded text-[9px] mt-1 text-slate-700 dark:text-zinc-300 border select-all">
-                    VITE_SUPABASE_URL=your_url
-                    <br />
-                    VITE_SUPABASE_ANON_KEY=your_key
-                  </div>
-                  <li>This console will instantly switch to <b>CONNECTED</b>!</li>
-                </ol>
-              </div>
-            </div>
           </div>
         </div>
       )}

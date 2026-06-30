@@ -35,7 +35,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { initialStudents } from "../data/mockData";
-import { getSupabaseClient } from "../lib/supabaseClient";
 import {
   ResponsiveContainer,
   PieChart,
@@ -2431,63 +2430,44 @@ Copyright © 2026 EduCore Academy Assam. All Rights Reserved.
                 setLoginError(null);
                 playSfx("click");
 
-                const client = getSupabaseClient();
-                if (!client) {
-                  setIsLoggingIn(false);
-                  setLoginError("Supabase credentials are not connected yet in the Secrets Panel. Please connect VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY first, or use the 'Demo Bypass' below to access instantly.");
-                  return;
-                }
-
-                try {
-                  const { data, error } = await client.auth.signInWithPassword({
-                    email: loginEmail,
-                    password: loginPassword,
-                  });
-
-                  if (error) {
-                    throw error;
-                  }
-
-                  if (data?.user) {
+                // Standard Offline Admin authentication (Supabase removed completely)
+                setTimeout(() => {
+                  if (loginEmail === "admin@school.com" && loginPassword === "admin123") {
                     playSfx("success");
-                    onLogAudit("Admin Log In", "Authentication", `Admin successfully logged in with Supabase: ${data.user.email}`);
+                    onLogAudit("Admin Log In", "Authentication", "Admin successfully logged in using standard credentials.");
                     setIsLoginModalOpen(false);
                     onUnlock();
                   } else {
-                    setLoginError("Invalid email or password.");
+                    setLoginError("Invalid email or password. Please use 'admin@school.com' and 'admin123', or click Direct Demo Bypass.");
                   }
-                } catch (err: any) {
-                  console.error("Supabase Auth error:", err);
-                  setLoginError(err.message || "An error occurred during authentication. Please verify credentials.");
-                } finally {
                   setIsLoggingIn(false);
-                }
+                }, 600);
               }}
               className="space-y-4"
             >
               <div className="space-y-3.5 text-xs">
                 {/* Email Field */}
                 <div className="space-y-1.5">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300 block">Supabase Registered Email</label>
+                  <label className="font-extrabold text-slate-700 dark:text-slate-300 block">Admin Email</label>
                   <input
                     type="email"
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    placeholder="admin@school.com"
                     className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white font-medium"
                   />
                 </div>
 
                 {/* Password Field */}
                 <div className="space-y-1.5">
-                  <label className="font-extrabold text-slate-700 dark:text-slate-300 block">Secret Password</label>
+                  <label className="font-extrabold text-slate-700 dark:text-slate-300 block">Password</label>
                   <input
                     type="password"
                     required
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="admin123"
                     className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white font-medium"
                   />
                 </div>
@@ -2499,7 +2479,7 @@ Copyright © 2026 EduCore Academy Assam. All Rights Reserved.
                 disabled={isLoggingIn}
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-500/10 flex items-center justify-center gap-2"
               >
-                {isLoggingIn ? "Authenticating with Supabase..." : "Sign In with Supabase"}
+                {isLoggingIn ? "Logging in..." : "Sign In to Workspace"}
               </button>
             </form>
 
@@ -2510,7 +2490,7 @@ Copyright © 2026 EduCore Academy Assam. All Rights Reserved.
                 <span className="text-[9px] bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded-full font-bold">Offline Active</span>
               </div>
               <p className="text-[10px] text-zinc-500 leading-normal">
-                Don't have a Supabase database hooked up yet? Access the entire school workspace instantly using the offline demo engine.
+                Access the entire school workspace instantly using the local offline engine.
               </p>
               
               <div className="grid grid-cols-2 gap-2.5">
